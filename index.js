@@ -44,7 +44,7 @@ function shutDown() {
   }, 10000);
 }
 
-function isLyrisGroup(msg) {
+function canReply(msg) {
   return (msg.chat.type == 'group' && msg.chat.id == process.env.TELEGRAM_GROUP_ID) || msg.chat.id == process.env.TELEGRAM_CHAT_TEST_ID
 }
 
@@ -52,7 +52,7 @@ function isLyrisGroup(msg) {
 
 bot.on('/start', (msg) => {
   console.log(msg.chat.id)
-  if (!isLyrisGroup(msg)) {
+  if (!canReply(msg)) {
     return msg.reply.text('Sorry, this bot is only allowed to work in a specific group. See ya!')
   }
   return msg.reply.text('Hola Lyris IT! Es un hermoso dia para trabajar!')
@@ -66,7 +66,7 @@ bot.on('/start', (msg) => {
  */
 
 bot.on(/^\/daily (.+)$/, (msg, props) => {
-  if (!isLyrisGroup(msg)) {
+  if (!canReply(msg)) {
     console.warn(`> ${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
     return;
   }
@@ -90,7 +90,7 @@ bot.on(/^\/daily (.+)$/, (msg, props) => {
  */
 
 bot.on(/^\/deleteDaily ([0-9]+)$/, (msg, props) => {
-  if (!isLyrisGroup(msg)) {
+  if (!canReply(msg)) {
     console.warn(`> ${msg.from.username} (${msg.from.id}) is trying to execute command /deleteDaily. Refusing...`)
     return;
   }
@@ -159,7 +159,7 @@ function closeLogs(msg){
 }
 
 bot.on('/logs', msg => {
-   if (!isLyrisGroup(msg)) {
+   if (!canReply(msg)) {
     console.warn(`> ${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
     return;
   }
