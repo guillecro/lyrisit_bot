@@ -45,12 +45,13 @@ function shutDown() {
 }
 
 function isLyrisGroup(msg) {
-  return msg.chat.type == 'group' && (msg.chat.id == process.env.TELEGRAM_GROUP_ID || msg.chat.id == process.env.TELEGRAM_CHAT_TEST_ID)
+  return (msg.chat.type == 'group' && msg.chat.id == process.env.TELEGRAM_GROUP_ID) || msg.chat.id == process.env.TELEGRAM_CHAT_TEST_ID
 }
 
 // =========================
 
 bot.on('/start', (msg) => {
+  console.log(msg.chat.id)
   if (!isLyrisGroup(msg)) {
     return msg.reply.text('Sorry, this bot is only allowed to work in a specific group. See ya!')
   }
