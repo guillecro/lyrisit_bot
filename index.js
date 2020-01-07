@@ -1,14 +1,16 @@
 require('dotenv').config()
 
-const TeleBot = require('telebot');
-const mysql = require('mysql');
-const format = require('date-format');
-
+const TeleBot = require('telebot')
+const mysql = require('mysql')
+const format = require('date-format')
+const logger = require('./logger')
 
 // =========================
 // SETUP 
 
-console.log(process.env.DB_HOST)
+console.log('// STARTING APP')
+console.log('// ========================')
+logger.info('App just started. Calling the Telegram BOT')
 
 const bot = new TeleBot({
   token: process.env.TELEGRAM_BOT_API_KEY,
@@ -28,18 +30,18 @@ const db = mysql.createConnection({
 // FUNCTIONS
 
 function shutDown() {
-  console.log('Received kill signal, shutting down gracefully');
+  logger.info('Received kill signal, shutting down gracefully');
   db.end(function (err) {
     if (err) {
-      console.error('error disconnecting: ' + err.stack);
+      logger.error('error disconnecting: ' + err.stack);
       process.exit(1);
     }
-    console.log('MySQL db closed');
+    logger.info('MySQL db closed');
     process.exit(0);
   });
 
   setTimeout(() => {
-    console.error('Could not close dbs in time, forcefully shutting down');
+    logger.error('Could not close dbs in time, forcefully shutting down');
     process.exit(1);
   }, 10000);
 }
@@ -51,7 +53,7 @@ function canReply(msg) {
 // =========================
 
 bot.on('/start', (msg) => {
-  console.log(msg.chat.id)
+  logger.info(msg.chat.id)
   if (!canReply(msg)) {
     return msg.reply.text('Sorry, this bot is only allowed to work in a specific group. See ya!')
   }
@@ -67,15 +69,15 @@ bot.on('/start', (msg) => {
 
 bot.on(/^\/daily (.+)$/, (msg, props) => {
   if (!canReply(msg)) {
-    console.warn(`> ${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
+    logger.warn(`${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
     return;
   }
   const text = props.match[1];
   db.query('INSERT INTO daily SET ?', { user: msg.from.id, username: msg.from.username, log: text, date: new Date() }, function (error, results) {
     if (error) {
-      console.error(error)
+      logger.error(error)
     };
-    console.log(`Added log #${results.insertId}`);
+    logger.info(`Added log #${results.insertId}`);
     return bot.sendMessage(msg.chat.id, `✅ Guardado log \`#${results.insertId}!\``, { parseMode: 'markdown', replyToMessage: msg.message_id });
   });
 });
@@ -91,19 +93,19 @@ bot.on(/^\/daily (.+)$/, (msg, props) => {
 
 bot.on(/^\/deleteDaily ([0-9]+)$/, (msg, props) => {
   if (!canReply(msg)) {
-    console.warn(`> ${msg.from.username} (${msg.from.id}) is trying to execute command /deleteDaily. Refusing...`)
+    logger.warn(`${msg.from.username} (${msg.from.id}) is trying to execute command /deleteDaily. Refusing...`)
     return;
   }
   const idToDelete = props.match[1];
   db.query('DELETE FROM daily WHERE id = ?', [idToDelete], function (error, results) {
     if (error) {
-      console.error(error)
+      logger.error(error)
     };
     if (results.affectedRows > 0) {
-      console.log(`Deleted log #${idToDelete}`);
+      logger.info(`Deleted log #${idToDelete}`);
       return bot.sendMessage(msg.chat.id, `🗑 Eliminado log \`#${idToDelete}\`!`, { parseMode: 'markdown', replyToMessage: msg.message_id });
     } else {
-      console.log(`No log with ID #${idToDelete}`);
+      logger.info(`No log with ID #${idToDelete}`);
       return bot.sendMessage(msg.chat.id, `El log \`#${idToDelete}\` no existe!`, { parseMode: 'markdown', replyToMessage: msg.message_id });
     }
   });
@@ -122,7 +124,7 @@ function preparePagination(msg, page, edit){
     // Execute
     // Error?
     if (error) {
-      console.error(error)
+      logger.error(error)
       return bot.sendMessage(msg.chat.id, ' Perdon, tuve un error interno y no pude obtener los logs... UwU', { parseMode: 'markdown' });
     };
     // All OK, prepare message
@@ -152,15 +154,12 @@ function preparePagination(msg, page, edit){
 }
 
 function closeLogs(msg){
-  let message = '🗯 *EXPLORADOR DE LOGS*\n\n'
-  message += 'Gracias por usar el explorador. Bye!'
-  bot.answerCallbackQuery(msg.id, {text: 'Gracias por usar el explorador!'})
   return bot.deleteMessage(msg.chat.id, msg.message_id);
 }
 
 bot.on('/logs', msg => {
    if (!canReply(msg)) {
-    console.warn(`> ${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
+    logger.warn(`> ${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
     return;
   }
   return preparePagination(msg,0)
@@ -174,7 +173,7 @@ bot.on('callbackQuery', (msg) => {
   // Collect the data
   const theData = JSON.parse(msg.data)
   // debug
-  // console.log(theData)
+  // logger.info(theData)
   if(theData.command == 'logs'){
     preparePagination(msg.message, theData.page, true)
     bot.answerCallbackQuery(msg.id)
