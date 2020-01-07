@@ -1,0 +1,18 @@
+{
+  "name": "lyris-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "date-format": "^3.0.0",
+    "dotenv": "^8.2.0",
+    "mysql": "^2.17.1",
+    "telebot": "^1.2.6"
+  }
+}
