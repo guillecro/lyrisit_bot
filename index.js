@@ -69,7 +69,7 @@ bot.on('/start', (msg) => {
 
 
 
-bot.on(/^\/daily ((?:.+\s)+.+)/, (msg, props) => {
+bot.on(/^\/daily ((?:.+\s)+.+|(?:.+))/, (msg, props) => {
   if (!canReply(msg)) {
     logger.warn(`${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
     return;
