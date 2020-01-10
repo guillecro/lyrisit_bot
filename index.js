@@ -8,8 +8,8 @@ const logger = require('./logger')
 // =========================
 // SETUP 
 
-console.log('// STARTING APP')
-console.log('// ========================')
+logger.info('// STARTING APP')
+logger.info('// ========================')
 logger.info('App just started. Calling the Telegram BOT')
 
 const bot = new TeleBot({
@@ -67,15 +67,18 @@ bot.on('/start', (msg) => {
  * 
  */
 
-bot.on(/^\/daily (.+)$/, (msg, props) => {
+
+
+bot.on(/^\/daily ((?:.+\s)+.+)/, (msg, props) => {
   if (!canReply(msg)) {
     logger.warn(`${msg.from.username} (${msg.from.id}) is trying to execute command /daily. Refusing...`)
     return;
   }
-  const text = props.match[1];
+  const text = props.match[1]
   db.query('INSERT INTO daily SET ?', { user: msg.from.id, username: msg.from.username, log: text, date: new Date() }, function (error, results) {
     if (error) {
       logger.error(error)
+      return bot.sendMessage(msg.chat.id, `✖️ Perdon, tuve un error interno y no pude guardar tu log... UwU\nCódigo: ${error.code}`, { parseMode: 'markdown' });
     };
     logger.info(`Added log #${results.insertId}`);
     return bot.sendMessage(msg.chat.id, `✅ Guardado log \`#${results.insertId}!\``, { parseMode: 'markdown', replyToMessage: msg.message_id });
@@ -100,6 +103,7 @@ bot.on(/^\/deleteDaily ([0-9]+)$/, (msg, props) => {
   db.query('DELETE FROM daily WHERE id = ?', [idToDelete], function (error, results) {
     if (error) {
       logger.error(error)
+      return bot.sendMessage(msg.chat.id, `✖️ Perdon, tuve un error interno y no pude eliminar eñ log... UwU\nCódigo: ${error.code}`, { parseMode: 'markdown' });
     };
     if (results.affectedRows > 0) {
       logger.info(`Deleted log #${idToDelete}`);
@@ -125,7 +129,7 @@ function preparePagination(msg, page, edit){
     // Error?
     if (error) {
       logger.error(error)
-      return bot.sendMessage(msg.chat.id, ' Perdon, tuve un error interno y no pude obtener los logs... UwU', { parseMode: 'markdown' });
+      return bot.sendMessage(msg.chat.id, '✖️ Perdon, tuve un error interno y no pude obtener los logs... UwU\nCódigo: ${error.code}', { parseMode: 'markdown' });
     };
     // All OK, prepare message
     let message = '🗯 *EXPLORADOR DE LOGS*\n\n'
