@@ -47,6 +47,8 @@ function shutDown() {
 }
 
 function canReply(msg) {
+  logger.info(`${msg.chat.id} is trying to contact`)
+  logger.info(`canReply() = ${((msg.chat.type == 'group' && msg.chat.id == process.env.TELEGRAM_GROUP_ID) || msg.chat.id == process.env.TELEGRAM_CHAT_TEST_ID)}`)
   return ((msg.chat.type == 'group' && msg.chat.id == process.env.TELEGRAM_GROUP_ID) || msg.chat.id == process.env.TELEGRAM_CHAT_TEST_ID)
 }
 
