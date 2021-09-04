@@ -1,4 +1,4 @@
-# Lyris IT BOT
+# Daily Logs - Telegram Bot
 > A Telegram BOT for Lyris IT
 
 This is a simple bot made with [Telebot](https://github.com/mullwar/telebot). Exclusively made for a telegram group for the developers to record "daily logs"
